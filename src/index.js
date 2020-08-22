@@ -1,28 +1,51 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+const baseUrl = 'http://api.github.com/users/';
+
 function App() {
-  const people = ['John', 'Dave', 'Jane'];
+  const [username, setUsername] = React.useState('a19i23');
+  const [user, setUser] = React.useState(null);
+  const searchInput = React.useRef();
 
-  function handleInputChange(event) {
-    const inputValue = event.target.value;
-    console.log(inputValue);
+  React.useEffect(() => {
+    getUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleClearInput() {
+    searchInput.current.value = '';
+    searchInput.current.focus();
   }
+
+  async function getUser() {
+    const response = await fetch(`${baseUrl}${username}`);
+    const data = await response.json();
+    setUser(data);
+  }
+
   return (
-    <ul>
-      {people.map((person, i) => (
-        <Person key={i} person={person} />
-      ))}
-      <input onChange={handleInputChange}></input>
-    </ul>
-  );
-}
+    <div>
+      <input
+        type="text"
+        placeholder="Input username"
+        onChange={(event) => setUsername(event.target.value)}
+        ref={searchInput}
+      />
+      <button onClick={getUser}>Search</button>
+      <button onClick={handleClearInput}>Clear</button>
 
-function Person(props) {
-  function handlePersonClick() {
-    alert(props.person);
-  }
-  return <li onClick={handlePersonClick}>{props.person}</li>;
+      {user ? (
+        <div>
+          <h2>{user.name}</h2>
+          <p>{user.bio}</p>
+          <img alt="avatar" src={user.avatar_url} style={{ height: 50 }} />
+        </div>
+      ) : (
+        <p>loading...</p>
+      )}
+    </div>
+  );
 }
 
 const rootNode = document.getElementById('root');
